@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Surface</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body { margin: 0; }
+/* Layout: a spec-sheet product page. Sticky bar, hero with the looping ad in a device frame,
+   then evidence, a 4-stage pipeline, privacy spec table, and the issue desk. */
+:root {
+  --bg: #F5F7FB;
+  --surface: #FFFFFF;
+  --ink: #0F1A2E;
+  --muted: #56627A;
+  --line: #DCE2EE;
+  --blue: #2F5BEA;
+  --blue-soft: #E7EDFD;
+  --orange: #FF7A1A;
+  --ok: #1F8A5B;
+  --warn: #B26A00;
+  --bad: #C2372B;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --r: 14px;
+  --max: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0F1C; --surface: #111A2D; --ink: #E6ECF8; --muted: #93A0BC; --line: #233050;
+    --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0F1C; --surface: #111A2D; --ink: #E6ECF8; --muted: #93A0BC; --line: #233050;
+  --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+a { color: var(--blue); }
+.wrap {
+  max-width: var(--max); margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { text-wrap: balance; letter-spacing: -0.025em; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.3rem, 5.4vw, 3.9rem); font-weight: 800; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; }
+h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); }
+.lede { color: var(--muted); font-size: 1.12rem; max-width: 34em; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+
+/* bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em; }
+.brand svg { width: 34px; height: 34px; flex: none; }
+.nav { display: flex; gap: 20px; margin-left: auto; }
+.nav a { color: var(--muted); text-decoration: none; font-size: 0.93rem; font-weight: 500; }
+.nav a:hover { color: var(--ink); }
+@media (max-width: 720px) { .nav { display: none; } .bar .btn { margin-left: auto; } }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 12px 22px; font: 600 0.95rem var(--font-body); cursor: pointer; text-decoration: none; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { border-color: var(--blue); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* hero */
+.hero { padding-block: 64px 56px; }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.price { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); border: 1px solid var(--line); background: var(--surface); padding: 5px 10px; border-radius: 6px; }
+.chip b { color: var(--ink); font-weight: 500; }
+.device { position: relative; border-radius: 26px; padding: 12px; background: var(--ink); box-shadow: 0 30px 60px -30px rgba(15, 26, 46, 0.45); max-width: 520px; width: 100%; justify-self: center; }
+.device video { display: block; width: 100%; aspect-ratio: 1; border-radius: 16px; background: #F6F3EC; max-width: 100%; }
+.device .sound { position: absolute; right: 24px; bottom: 24px; font: 500 0.78rem var(--font-mono); background: rgba(15, 26, 46, 0.82); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.device-cap { margin-top: 10px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); text-align: center; }
+@media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; gap: 36px; } .hero { padding-block: 40px; } }
+
+section { padding-block: 72px; }
+section + section { border-top: 1px solid var(--line); }
+.head { display: grid; gap: 12px; margin-bottom: 36px; max-width: 46em; }
+
+/* problem */
+.problem-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: start; }
+.quote { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 28px; display: grid; gap: 16px; min-width: 0; }
+.quote p { font-size: 1.12rem; }
+.quote .src { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.stats { display: grid; gap: 14px; min-width: 0; }
+.stat { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: baseline; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+.stat:last-child { border-bottom: 0; }
+.stat .num { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 500; color: var(--blue); font-variant-numeric: tabular-nums; }
+.stat .txt { font-size: 0.95rem; }
+.stat .txt a { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; margin-top: 4px; }
+@media (max-width: 860px) { .problem-grid { grid-template-columns: 1fr; } }
+
+/* pipeline */
+.pipe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.stage { padding: 24px; display: grid; gap: 10px; align-content: start; border-right: 1px solid var(--line); min-width: 0; }
+.stage:last-child { border-right: 0; }
+.stage .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--blue); }
+.stage p { color: var(--muted); font-size: 0.93rem; }
+.stage code { font-family: var(--font-mono); font-size: 0.78rem; background: var(--blue-soft); color: var(--ink); padding: 1px 6px; border-radius: 4px; }
+@media (max-width: 860px) { .pipe { grid-template-columns: 1fr 1fr; } .stage:nth-child(2) { border-right: 0; } .stage:nth-child(-n+2) { border-bottom: 1px solid var(--line); } }
+@media (max-width: 520px) { .pipe { grid-template-columns: 1fr; } .stage { border-right: 0; border-bottom: 1px solid var(--line); } .stage:last-child { border-bottom: 0; } }
+
+.notif-demo { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.notif { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 18px; max-width: 420px; width: 100%; box-shadow: 0 12px 30px -20px rgba(15, 26, 46, 0.4); }
+.notif svg { width: 28px; height: 28px; grid-row: span 2; }
+.pill-imp { justify-self: start; background: var(--orange); color: #fff; font: 800 0.75rem var(--font-body); padding: 3px 10px; border-radius: 999px; }
+.notif .msg { font-weight: 600; font-size: 0.95rem; }
+.notif-note { color: var(--muted); font-size: 0.9rem; max-width: 30em; }
+
+/* privacy */
+.spec { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.spec-wrap { overflow-x: auto; border-radius: var(--r); }
+.spec th, .spec td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 0.95rem; }
+.spec tr:last-child th, .spec tr:last-child td { border-bottom: 0; }
+.spec th { font-family: var(--font-mono); font-weight: 500; font-size: 0.78rem; color: var(--muted); width: 210px; text-transform: uppercase; letter-spacing: 0.05em; }
+.yes { color: var(--ok); font-weight: 600; }
+.no { color: var(--bad); font-weight: 600; }
+
+/* issues */
+.desk { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 24px; display: grid; gap: 18px; min-width: 0; }
+.panel h3 { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.panel h3 small { font: 400 0.75rem var(--font-mono); color: var(--muted); }
+form { display: grid; gap: 16px; }
+.field { display: grid; gap: 6px; }
+.field label, .legend { font-size: 0.85rem; font-weight: 600; }
+.field .hint { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+input[type=text], input[type=email], select, textarea {
+  width: 100%; font: 400 0.95rem var(--font-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+textarea { min-height: 110px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: 0; border-color: transparent; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .two { grid-template-columns: 1fr; } }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; margin: 0; }
+.seg label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 500; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; background: var(--bg); }
+.seg input { accent-color: var(--blue); margin: 0; }
+.seg label:has(input:checked) { border-color: var(--blue); background: var(--blue-soft); }
+.form-foot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.status-line { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.status-line.err { color: var(--bad); }
+.status-line.ok { color: var(--ok); }
+.list { display: grid; gap: 12px; }
+.report { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; background: var(--bg); }
+.report .top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.report .meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.report p { font-size: 0.93rem; overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-family: var(--font-mono); font-size: 0.7rem; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; color: var(--muted); background: var(--surface); }
+.st { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.st-open { color: var(--warn); }
+.st-investigating { color: var(--blue); }
+.st-fixed { color: var(--ok); }
+.sev-blocking { color: var(--bad); border-color: currentColor; }
+.empty { color: var(--muted); font-size: 0.93rem; border: 1px dashed var(--line); border-radius: 12px; padding: 18px; }
+.preview { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; line-height: 1.55; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-height: 220px; color: var(--ink); }
+.owner-panel select { width: auto; padding: 4px 8px; font-size: 0.8rem; }
+@media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+
+/* get */
+.get { background: var(--ink); color: var(--bg); border-radius: 22px; padding: 44px; display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center; }
+.get p { color: color-mix(in srgb, var(--bg) 75%, var(--ink)); max-width: 36em; }
+.get .eyebrow { color: color-mix(in srgb, var(--blue) 70%, var(--bg)); }
+@media (max-width: 720px) { .get { grid-template-columns: 1fr; padding: 28px; } }
+
+footer { padding-block: 40px 56px; color: var(--muted); font-size: 0.85rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 64 64">
+    <rect x="12" y="8" width="40" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="4.5"/>
+    <path d="M15 11 L32 24 L49 11" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M6 48 q6.5 -6 13 0 t13 0 t13 0 t13 0" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="50" cy="9" r="6" fill="#FF7A1A"/>
+  </symbol>
+</svg>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top" style="color: var(--blue)"><svg aria-hidden="true"><use href="#mark"/></svg><span style="color: var(--ink)">Surface</span></a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#issues">Report an issue</a>
+    </nav>
+    <a class="btn btn-primary" href="#get">Get Surface</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="eyebrow">Email triage for college students</span>
+        <h1>Never miss an important email again.</h1>
+        <p class="lede">Surface watches your school and personal inboxes and sends a phone alert, with a short summary, the moment something important arrives from a professor, a boss or a deadline.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#get">Get Surface</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+          <span class="price">Free</span>
+        </div>
+        <div class="chips" aria-label="Built on">
+          <span class="chip"><b>Microsoft Graph</b> school mail</span>
+          <span class="chip"><b>Gmail API</b> personal mail</span>
+          <span class="chip"><b>On-device</b> summaries</span>
+        </div>
+      </div>
+      <figure style="margin:0">
+        <div class="device">
+          <video id="ad" src="surface-ad-short.mp4" autoplay muted loop playsinline preload="auto" aria-label="12-second Surface ad: a professor buried under junk mail is rescued when Surface flags the email."></video>
+          <button class="sound" id="sound" type="button" aria-pressed="false">Sound on</button>
+        </div>
+        <figcaption class="device-cap">12 s loop · the professor's email, rescued</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <section id="problem">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">The problem</span>
+        <h2>Checking all day still isn't enough.</h2>
+        <p class="lede">Students get tens of emails a day across two accounts. The one that matters sits between a sale and a newsletter.</p>
+      </div>
+      <div class="problem-grid">
+        <div class="quote">
+          <p>“I check my email as much as I can, and I still miss things. My professor sent an email saying we could bring a cheat sheet to a really hard exam. I never saw it, so I walked in without one and did worse than I could have.”</p>
+          <span class="src">From the founder's own experience.</span>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span class="num">~3 in 4</span>
+            <span class="txt">students said they get too many school communications; some said deadlines and aid notices got lost.
+              <a href="https://www.ggc.edu/faculty-and-staff/inside-ggc/student-survey-highlights-need-for-smarter-more-targeted-communication" target="_blank" rel="noopener">Georgia Gwinnett College, 2026 · n=1,188</a></span>
+          </div>
+          <div class="stat">
+            <span class="num">86%</span>
+            <span class="txt">of students checked university email daily, yet almost half did not read every message.
+              <a href="https://uwaterloo.ca/student-communications-survey/sites/default/files/uploads/documents/2015student_communications_survey_results.pdf" target="_blank" rel="noopener">University of Waterloo, 2015</a></span>
+          </div>
+          <div class="stat">
+            <span class="num">6 / 6</span>
+            <span class="txt">roommates asked said they had missed an important email.
+              <a href="#problem">Founder's informal ask</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">How it works</span>
+        <h2>Four steps from inbox to alert.</h2>
+        <p class="lede">Setup takes about two minutes. After that, Surface runs on its own.</p>
+      </div>
+      <div class="pipe">
+        <div class="stage">
+          <span class="n">01 · connect</span>
+          <h3>Link both inboxes</h3>
+          <p>Sign in to your school account and your personal Gmail. Skip the second one if you only use one.</p>
+        </div>
+        <div class="stage">
+          <span class="n">02 · rules</span>
+          <h3>Name who matters</h3>
+          <p>Add professors and bosses, and keep keywords like <code>exam</code> <code>grade</code> <code>deadline</code> <code>cancelled</code> switched on.</p>
+        </div>
+        <div class="stage">
+          <span class="n">03 · summarize</span>
+          <h3>Read it on your phone</h3>
+          <p>Each important email gets a one-line summary, written on your phone. The email text never leaves it.</p>
+        </div>
+        <div class="stage">
+          <span class="n">04 · alert</span>
+          <h3>Get the buzz</h3>
+          <p>A notification arrives right away. Tap it for the summary, or open the Important list to catch up.</p>
+        </div>
+      </div>
+      <div class="notif-demo">
+        <div class="notif" role="img" aria-label="Example notification: Important! Email from your professor. Cheat sheet allowed on Friday's exam.">
+          <svg style="color: var(--blue)"><use href="#mark"/></svg>
+          <span class="pill-imp">Important!</span>
+          <span class="msg">Email from your professor</span>
+          <span></span>
+          <span style="color: var(--muted); font-size: 0.9rem;">Cheat sheet allowed on Friday's exam.</span>
+        </div>
+        <p class="notif-note">Wrong call? Tap <b>Not important</b> or <b>Mark important</b>. Surface remembers the sender, and you can see and undo everything it learned in Settings.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Privacy</span>
+        <h2>Your email stays on your phone.</h2>
+        <p class="lede">Surface only reads mail to decide what matters. Here is exactly what it does and doesn't do.</p>
+      </div>
+      <div class="spec-wrap">
+        <table class="spec">
+          <tr><th scope="row">Where data lives</th><td>On your phone. Only you can see it.</td></tr>
+          <tr><th scope="row">Summaries</th><td>Written on the device. Email text is <span class="no">never</span> sent to an outside AI service.</td></tr>
+          <tr><th scope="row">School mail</th><td>Connects through the Microsoft Graph API. Some schools require IT approval for outside apps.</td></tr>
+          <tr><th scope="row">Personal mail</th><td>Connects through the Gmail API.</td></tr>
+          <tr><th scope="row">Sends or deletes mail</th><td><span class="no">No.</span> Surface reads and flags. Replying happens in your email app.</td></tr>
+          <tr><th scope="row">Learning</th><td>Simple rules you can see: sender choices and keywords. <span class="yes">Undo anything</span> in Settings.</td></tr>
+          <tr><th scope="row">Price</th><td>Free.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="issues">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Support</span>
+        <h2>Report an issue.</h2>
+        <p class="lede">Something not working? Tell us what happened. Your report is built right here and sent by email to the Surface team. No account needed.</p>
+      </div>
+      <div class="desk">
+        <div class="panel">
+          <h3>New report <small>no account needed</small></h3>
+          <form id="report-form" novalidate>
+            <div class="two">
+              <div class="field">
+                <label for="area">Where is the problem?</label>
+                <select id="area" required>
+                  <option value="">Choose one</option>
+                  <option>Connecting email</option>
+                  <option>Notifications</option>
+                  <option>Summaries</option>
+                  <option>Important list</option>
+                  <option>Marking important / not important</option>
+                  <option>Setup</option>
+                  <option>Something else</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="account">Which account?</label>
+                <select id="account">
+                  <option>School</option>
+                  <option>Personal</option>
+                  <option>Both</option>
+                  <option>Not sure</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <span class="legend" id="sev-label">How bad is it?</span>
+              <fieldset class="seg" aria-labelledby="sev-label">
+                <label><input type="radio" name="sev" value="Blocking" id="sev-blocking"> Can't use the app</label>
+                <label><input type="radio" name="sev" value="Annoying" id="sev-annoying" checked> Annoying</label>
+                <label><input type="radio" name="sev" value="Minor" id="sev-minor"> Minor</label>
+              </fieldset>
+            </div>
+            <div class="field">
+              <label for="what">What happened? <span class="hint">Leave out passwords and email contents.</span></label>
+              <textarea id="what" maxlength="1500" required placeholder="Example: My professor emailed about the midterm and I didn't get a notification until the next day."></textarea>
+            </div>
+            <div class="field">
+              <label for="contact">Contact email <span class="hint">Optional, if you want a reply.</span></label>
+              <input type="email" id="contact" maxlength="120" autocomplete="email">
+            </div>
+            <div class="form-foot">
+              <span class="status-line" id="form-status" role="status" aria-live="polite"></span>
+              <button class="btn btn-primary" type="submit" id="submit">Send report</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h3>Report preview <small id="dest">support email coming soon</small></h3>
+          <pre class="preview mono" id="preview" aria-live="polite">Fill in the form and your report appears here, ready to send.</pre>
+          <div class="form-foot">
+            <span class="status-line" id="copy-status" role="status" aria-live="polite"></span>
+            <button class="btn btn-ghost" type="button" id="copy">Copy report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="get">
+    <div class="wrap">
+      <div class="get">
+        <div style="display:grid; gap:12px; min-width:0">
+          <span class="eyebrow">Get Surface</span>
+          <h2>Free for students.</h2>
+          <p>Surface is in development as a student class project. App store links will be posted here when it launches.</p>
+        </div>
+        <a class="btn btn-primary" href="#issues">Report an issue</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Surface · a student class project</span>
+    <span>Not affiliated with Microsoft or Google.</span>
+  </div>
+</footer>
+
+<script>
+// ---- ad: sound toggle ----
+(() => {
+  const v = document.getElementById('ad'), b = document.getElementById('sound');
+  b.addEventListener('click', () => {
+    v.muted = !v.muted;
+    if (!v.muted) { v.currentTime = 0; v.play().catch(() => {}); }
+    b.textContent = v.muted ? 'Sound on' : 'Sound off';
+    b.setAttribute('aria-pressed', String(!v.muted));
+  });
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { v.removeAttribute('autoplay'); v.pause(); v.controls = true; }
+})();
+
+// ---- issue desk (no sign-in) ----
+// Set this to the address that should receive reports, e.g. "surface.support@gmail.com".
+// Leave it empty and the form builds the report for the visitor to copy instead.
+const SUPPORT_EMAIL = "";
+(() => {
+  const $ = id => document.getElementById(id);
+  const form = $('report-form'), statusEl = $('form-status'), pre = $('preview');
+  const say = (el, msg, kind = '') => { el.textContent = msg; el.className = 'status-line ' + kind; };
+  if (SUPPORT_EMAIL) { $('dest').textContent = 'sends to ' + SUPPORT_EMAIL; $('submit').textContent = 'Email report'; }
+  else { $('submit').textContent = 'Build report'; }
+
+  function build() {
+    const sev = form.querySelector('input[name=sev]:checked')?.value || 'Annoying';
+    const what = $('what').value.trim(), contact = $('contact').value.trim();
+    return {
+      subject: `Surface issue: ${$('area').value || 'Unspecified'} (${sev})`,
+      body: [
+        `Where: ${$('area').value || '(not chosen)'}`,
+        `Account: ${$('account').value}`,
+        `Severity: ${sev}`,
+        `Reply to: ${contact || '(none given)'}`,
+        `Sent: ${new Date().toLocaleString()}`,
+        '',
+        'What happened:',
+        what || '(not filled in yet)',
+      ].join('\n'),
+    };
+  }
+  const refresh = () => { const r = build(); pre.textContent = `Subject: ${r.subject}\n\n${r.body}`; };
+  form.addEventListener('input', refresh);
+  form.addEventListener('change', refresh);
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!$('area').value) { say(statusEl, 'Choose where the problem is.', 'err'); $('area').focus(); return; }
+    if ($('what').value.trim().length < 10) { say(statusEl, 'Describe what happened in a sentence or two.', 'err'); $('what').focus(); return; }
+    const c = $('contact').value.trim();
+    if (c && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) { say(statusEl, 'That contact email looks incomplete.', 'err'); $('contact').focus(); return; }
+    refresh();
+    const r = build();
+    if (SUPPORT_EMAIL) {
+      location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(r.subject)}&body=${encodeURIComponent(r.body)}`;
+      say(statusEl, 'Your email app should open with the report filled in. If it didn\u2019t, copy the report and email it to ' + SUPPORT_EMAIL + '.', 'ok');
+    } else {
+      say(statusEl, 'Report ready. The support address is coming soon, so copy it for now.', 'ok');
+      $('copy').focus();
+    }
+  });
+
+  $('copy').addEventListener('click', async () => {
+    const text = pre.textContent;
+    try { await navigator.clipboard.writeText(text); say($('copy-status'), 'Copied.', 'ok'); }
+    catch {
+      const sel = getSelection(), range = document.createRange();
+      range.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(range);
+      say($('copy-status'), 'Selected. Press Ctrl+C to copy.', 'ok');
+    }
+  });
+  refresh();
+})();
+</script>
+
+</body>
+</html>
