@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
 <style>
 body { margin: 0; }
 /* Layout: a spec-sheet product page. Sticky bar, hero with the looping ad in a device frame,
@@ -24,21 +24,27 @@ body { margin: 0; }
   --ok: #1F8A5B;
   --warn: #B26A00;
   --bad: #C2372B;
-  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --orange-soft: #FFF0E3;
+  --teal: #0F9488;
+  --teal-soft: #E1F5F2;
+  --violet: #6A4CE0;
+  --violet-soft: #EEEAFD;
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Plus Jakarta Sans", system-ui, sans-serif;
   --r: 14px;
   --max: 1120px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0A0F1C; --surface: #111A2D; --ink: #E6ECF8; --muted: #93A0BC; --line: #233050;
-    --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468;
+    --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468; --orange-soft: #2B1B10; --teal: #45CDBD; --teal-soft: #0F2A2A; --violet: #A08BFF; --violet-soft: #1E1A3F;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0A0F1C; --surface: #111A2D; --ink: #E6ECF8; --muted: #93A0BC; --line: #233050;
-  --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468;
+  --blue: #6F8DFF; --blue-soft: #18244A; --orange: #FF8A33; --ok: #4CC08A; --warn: #E3A13B; --bad: #F07468; --orange-soft: #2B1B10; --teal: #45CDBD; --teal-soft: #0F2A2A; --violet: #A08BFF; --violet-soft: #1E1A3F;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -188,6 +194,43 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outl
 
 footer { padding-block: 40px 56px; color: var(--muted); font-size: 0.85rem; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
+/* ---- warmer type + a little color ---- */
+h1, h2, h3, .brand, .stat .num { font-family: var(--font-display); }
+h1 { font-weight: 800; letter-spacing: -0.035em; }
+h2 { font-weight: 700; letter-spacing: -0.03em; }
+h3 { font-weight: 700; letter-spacing: -0.01em; }
+.brand { letter-spacing: -0.02em; }
+.eyebrow { text-transform: none; letter-spacing: 0; font-size: 0.9rem; font-weight: 700; }
+.eyebrow::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); margin-right: 8px; vertical-align: 1px; }
+.lede { line-height: 1.65; }
+.hero { background:
+  radial-gradient(60% 70% at 92% 10%, var(--orange-soft), transparent 70%),
+  radial-gradient(70% 80% at 0% 0%, var(--blue-soft), transparent 70%); }
+.chip { background: var(--blue-soft); border-color: transparent; font-size: 0.8rem; border-radius: 999px; padding: 6px 12px; }
+.chip:nth-child(2) { background: var(--teal-soft); }
+.chip:nth-child(3) { background: var(--violet-soft); }
+.price { font-weight: 600; color: var(--teal); }
+.quote { background: var(--orange-soft); border-color: transparent; position: relative; padding-top: 56px; }
+.quote::before { content: "“"; position: absolute; top: 10px; left: 22px; font: 800 5rem/1 var(--font-display); color: var(--orange); }
+.quote p { font-size: 1.18rem; line-height: 1.6; }
+.quote .src { font-size: 0.85rem; }
+.stat .num { font-weight: 800; font-size: 1.8rem; letter-spacing: -0.02em; }
+.stat:nth-child(2) .num { color: var(--teal); }
+.stat:nth-child(3) .num { color: var(--orange); }
+.stat .txt a { font-size: 0.8rem; }
+.stage .n { justify-self: start; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--blue-soft); }
+.stage:nth-child(2) .n { background: var(--teal-soft); color: var(--teal); }
+.stage:nth-child(3) .n { background: var(--violet-soft); color: var(--violet); }
+.stage:nth-child(4) .n { background: var(--orange-soft); color: var(--orange); }
+.stage code { font-family: var(--font-body); font-weight: 600; font-size: 0.8rem; border-radius: 999px; padding: 1px 8px; }
+.spec th { text-transform: none; letter-spacing: 0; font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+.device-cap { font-size: 0.8rem; }
+.status-line { font-size: 0.85rem; }
+.preview { font-family: var(--font-body); font-size: 0.88rem; }
+.get { background: var(--blue); color: #fff; }
+.get p { color: rgba(255,255,255,0.86); }
+.get .eyebrow { color: #fff; }
+.get .btn-primary { background: #fff; color: var(--blue); }
 </style>
 </head>
 <body>
@@ -250,7 +293,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: 
       </div>
       <div class="problem-grid">
         <div class="quote">
-          <p>“I check my email as much as I can, and I still miss things. My professor sent an email saying we could bring a cheat sheet to a really hard exam. I never saw it, so I walked in without one and did worse than I could have.”</p>
+          <p>I check my email as much as I can, and I still miss things. My professor sent an email saying we could bring a cheat sheet to a really hard exam. I never saw it, so I walked in without one and did worse than I could have.</p>
           <span class="src">From the founder's own experience.</span>
         </div>
         <div class="stats">
