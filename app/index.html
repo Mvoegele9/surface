@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F5BEA">
+<title>Surface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Surface prototype. Phone frame on desktop, full screen on a phone. Same tokens as the website. */
+:root {
+  --bg: #F5F7FB; --surface: #FFFFFF; --ink: #0F1A2E; --muted: #5B6680; --line: #E1E6F0;
+  --blue: #2F5BEA; --blue-soft: #E7EDFD; --teal: #0F9488; --teal-soft: #E1F5F2;
+  --orange: #FF7A1A; --orange-soft: #FFF0E3; --bad: #C2372B; --ok: #1F8A5B;
+  --frame: #0F1A2E; --desk: #E9EDF5;
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1120; --surface: #131C30; --ink: #E7ECF7; --muted: #95A2BD; --line: #25314D;
+    --blue: #6F8DFF; --blue-soft: #1A2650; --teal: #45CDBD; --teal-soft: #0F2B2B;
+    --orange: #FF8A33; --orange-soft: #2B1B10; --bad: #F07468; --ok: #4CC08A;
+    --frame: #000000; --desk: #060A14; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1120; --surface: #131C30; --ink: #E7ECF7; --muted: #95A2BD; --line: #25314D;
+  --blue: #6F8DFF; --blue-soft: #1A2650; --teal: #45CDBD; --teal-soft: #0F2B2B;
+  --orange: #FF8A33; --orange-soft: #2B1B10; --bad: #F07468; --ok: #4CC08A;
+  --frame: #000000; --desk: #060A14; color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--desk); color: var(--ink); font: 400 15px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.025em; line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+
+/* stage: phone + prototype panel on wide screens */
+.stage { min-height: 100%; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 28px 16px; }
+.phone { position: relative; width: 390px; height: 820px; max-height: calc(100vh - 56px); border-radius: 48px; background: var(--frame); padding: 12px; box-shadow: 0 40px 80px -40px rgba(15,26,46,.55); flex: none; }
+.screen { position: relative; height: 100%; border-radius: 38px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+.demo { width: 300px; display: grid; gap: 16px; align-content: start; }
+.demo h2 { font-size: 1.5rem; }
+.demo p { color: var(--muted); font-size: .92rem; }
+.demo .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 10px; }
+.demo .card h3 { font-size: 1rem; }
+@media (max-width: 760px) {
+  body { background: var(--bg); }
+  .stage { padding: 0; display: block; height: 100%; }
+  .phone { width: 100%; height: 100%; max-height: none; border-radius: 0; padding: 0; box-shadow: none; }
+  .screen { border-radius: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .demo { display: none; }
+}
+
+/* shared bits */
+.status { height: 34px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: .78rem; font-weight: 700; }
+@media (max-width: 760px) { .status { display: none; } }
+.view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.pad { padding: 0 20px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; padding: 13px 20px; font-weight: 700; cursor: pointer; background: var(--blue-soft); color: var(--blue); }
+.btn.primary { background: var(--blue); color: #fff; }
+.btn.ghost { background: transparent; color: var(--muted); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.link { background: none; border: 0; color: var(--blue); font-weight: 600; cursor: pointer; padding: 6px 0; }
+.link.muted { color: var(--muted); }
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; color: var(--ink); }
+.icon-btn:hover { background: var(--blue-soft); }
+.row-person .icon-btn { color: var(--muted); font-size: 1rem; }
+.icon-btn svg { width: 22px; height: 22px; }
+.mark { width: 30px; height: 30px; color: var(--blue); flex: none; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.dot.school { background: var(--blue); }
+.dot.personal { background: var(--teal); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 12px; font-size: .82rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.chip.on { background: var(--blue-soft); border-color: transparent; color: var(--blue); }
+.chip .x { font-weight: 700; opacity: .6; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+input[type=text], input[type=email], select { width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; }
+input:focus, select:focus { outline: 2px solid var(--blue); border-color: transparent; }
+.label { font-size: .8rem; font-weight: 700; color: var(--muted); }
+
+/* setup */
+.setup { padding: 8px 22px 22px; display: flex; flex-direction: column; gap: 18px; flex: 1; min-height: 0; }
+.setup-top { display: flex; align-items: center; gap: 10px; }
+.progress { flex: 1; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--blue); border-radius: 99px; }
+.stepno { font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.setup h1 { font-size: 1.85rem; }
+.setup .lead { color: var(--muted); }
+.setup .body { flex: 1; min-height: 0; overflow-y: auto; display: grid; gap: 14px; align-content: start; }
+.setup .foot { display: grid; gap: 8px; }
+.connect { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.connect .meta { flex: 1; min-width: 0; }
+.connect .meta b { display: block; }
+.connect .meta span { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
+.check { width: 30px; height: 30px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; flex: none; }
+.check svg { width: 18px; height: 18px; }
+.row-person { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.row-person .meta { flex: 1; min-width: 0; }
+.row-person .meta b { display: block; font-size: .92rem; }
+.row-person .meta span { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+.tag { font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); white-space: nowrap; }
+.tag.boss { background: var(--teal-soft); color: var(--teal); }
+.tag.other { background: var(--line); color: var(--muted); }
+.addform { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.addform select { width: auto; }
+.hero-art { display: grid; place-items: center; padding: 18px 0; }
+.hero-art svg { width: 120px; height: 120px; }
+.allset { flex: 1; display: grid; place-items: center; text-align: center; padding: 24px; gap: 18px; align-content: center; }
+.allset h1 { font-size: 2.1rem; }
+
+/* home */
+.top { padding: 6px 16px 10px; display: grid; gap: 12px; background: var(--bg); }
+.top-row { display: flex; align-items: center; gap: 10px; }
+.top-row h1 { font-size: 1.6rem; flex: 1; }
+.switch { display: grid; grid-template-columns: 1fr 1fr; background: var(--line); border-radius: 999px; padding: 4px; }
+.switch button { border: 0; background: transparent; border-radius: 999px; padding: 8px; font-weight: 700; cursor: pointer; color: var(--muted); }
+.switch button[aria-pressed=true] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 6px rgba(15,26,46,.12); }
+.switch .count { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 99px; background: var(--orange); color: #fff; font-size: .72rem; line-height: 18px; }
+.tabs { display: flex; gap: 6px; }
+.tabs button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: .88rem; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.tabs button[aria-pressed=true] { background: var(--ink); color: var(--bg); }
+.day { padding: 14px 20px 6px; font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.mail { position: relative; overflow: hidden; }
+.mail .under { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 22px; background: var(--muted); color: #fff; font-weight: 700; font-size: .85rem; }
+.mail .row { position: relative; display: grid; grid-template-columns: 9px 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 20px; background: var(--bg); border-bottom: 1px solid var(--line); cursor: pointer; touch-action: pan-y; user-select: none; width: 100%; text-align: left; border-left: 0; border-right: 0; border-top: 0; }
+.mail .row:hover { background: var(--surface); }
+.mail .who { font-size: .93rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mail .who .lbl { color: var(--muted); font-weight: 500; }
+.mail .time { font-size: .78rem; color: var(--muted); }
+.mail .sum { grid-column: 2 / 4; font-size: .88rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mail.unread .who { font-weight: 800; }
+.mail.unread .sum { color: var(--ink); }
+.mail .mk { grid-column: 2 / 4; justify-self: start; margin-top: 4px; }
+.mini { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: .78rem; font-weight: 700; color: var(--blue); cursor: pointer; }
+.empty { text-align: center; padding: 60px 30px; color: var(--muted); display: grid; gap: 10px; justify-items: center; }
+.empty b { color: var(--ink); font-family: var(--font-display); font-size: 1.2rem; }
+.hint { margin: 12px 20px 20px; font-size: .8rem; color: var(--muted); text-align: center; }
+
+/* detail */
+.bar { display: flex; align-items: center; gap: 6px; padding: 4px 10px; }
+.bar .title { font-weight: 700; flex: 1; }
+.detail { padding: 6px 22px 28px; display: grid; gap: 18px; }
+.sender { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; background: var(--blue); flex: none; font-family: var(--font-display); }
+.avatar.personal { background: var(--teal); }
+.sender .meta { min-width: 0; }
+.sender .meta b { display: block; }
+.sender .meta span { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
+.subject { font-size: 1.35rem; }
+.summary { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; display: grid; gap: 6px; }
+.summary .k { font-size: .75rem; font-weight: 800; letter-spacing: .08em; color: var(--blue); }
+.summary p { font-size: 1.12rem; font-weight: 600; line-height: 1.45; }
+.why { display: grid; gap: 8px; }
+.why ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.why li { font-size: .88rem; display: flex; gap: 8px; align-items: baseline; }
+.why li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); flex: none; transform: translateY(-1px); }
+.full { white-space: pre-wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; font-size: .95rem; }
+.note { font-size: .8rem; color: var(--muted); }
+
+/* settings */
+.sect { padding: 6px 20px 16px; display: grid; gap: 10px; }
+.sect h3 { font-size: 1.05rem; }
+.toggle { position: relative; width: 50px; height: 30px; border-radius: 99px; border: 0; background: var(--line); cursor: pointer; flex: none; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .18s; }
+.toggle[aria-checked=true] { background: var(--ok); }
+.toggle[aria-checked=true]::after { transform: translateX(20px); }
+.line-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.line-row .meta { min-width: 0; }
+.line-row .meta span { display: block; color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+
+/* overlays */
+.banner { position: absolute; left: 10px; right: 10px; top: 40px; z-index: 20; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 12px 14px; border-radius: 20px; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(10px); box-shadow: 0 18px 40px -16px rgba(15,26,46,.5); border: 1px solid var(--line); cursor: pointer; transform: translateY(calc(-100% - 80px)); visibility: hidden; transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility 0s linear .35s; text-align: left; width: auto; }
+@media (max-width: 760px) { .banner { top: calc(10px + env(safe-area-inset-top, 0px)); } }
+.banner.show { transform: translateY(0); visibility: visible; transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+.banner .mark { grid-row: span 2; }
+.banner .t { display: flex; gap: 8px; align-items: center; font-size: .78rem; color: var(--muted); }
+.pill-imp { background: var(--orange); color: #fff; font-weight: 800; font-size: .74rem; padding: 2px 9px; border-radius: 999px; }
+.banner .m { font-weight: 700; font-size: .95rem; }
+.banner .s { grid-column: 2; font-size: .85rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scrim { position: absolute; inset: 0; z-index: 30; background: rgba(10,15,28,.45); display: flex; align-items: flex-end; }
+.scrim[hidden] { display: none; }
+.sheet { width: 100%; background: var(--surface); border-radius: 26px 26px 0 0; padding: 22px 22px calc(26px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; max-height: 85%; overflow-y: auto; }
+.sheet h2 { font-size: 1.3rem; }
+.sheet p { color: var(--muted); }
+.sheet .acts { display: grid; gap: 8px; }
+.perm { display: grid; gap: 8px; background: var(--bg); border-radius: 14px; padding: 14px; font-size: .9rem; }
+.perm div { display: flex; gap: 10px; align-items: center; }
+.toast { position: absolute; left: 50%; bottom: 26px; z-index: 25; transform: translate(-50%, 160%); background: var(--ink); color: var(--bg); padding: 11px 16px; border-radius: 14px; font-size: .88rem; font-weight: 600; display: flex; gap: 14px; align-items: center; transition: transform .3s; max-width: calc(100% - 32px); }
+.toast.show { transform: translate(-50%, 0); }
+.toast button { background: none; border: 0; color: var(--orange); font-weight: 800; cursor: pointer; padding: 0; }
+@media (prefers-reduced-motion: reduce) { .banner, .toast, .toggle::after { transition: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mark" viewBox="0 0 64 64">
+    <rect x="12" y="8" width="40" height="28" rx="4" fill="none" stroke="currentColor" stroke-width="4.5"/>
+    <path d="M15 11 L32 24 L49 11" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+    <path d="M6 48 q6.5 -6 13 0 t13 0 t13 0 t13 0" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="50" cy="9" r="6" fill="#FF7A1A"/>
+  </symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</svg>
+
+<div class="stage">
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="status" aria-hidden="true"><span id="clock">9:41</span><span>Surface</span></div>
+      <div class="view" id="app"></div>
+      <button class="banner" id="banner" type="button" aria-live="polite"></button>
+      <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+  <aside class="demo" aria-label="Prototype controls">
+    <svg class="mark" style="width:40px;height:40px"><use href="#i-mark"/></svg>
+    <h2>Surface prototype</h2>
+    <p>This is a working demo with sample emails. Nothing connects to a real inbox yet, and everything you change is saved in this browser only.</p>
+    <div class="card">
+      <h3>Try it</h3>
+      <p>Send a new email to the inbox and watch for the notification.</p>
+      <button class="btn primary" type="button" data-act="simulate">Simulate new email</button>
+      <button class="btn" type="button" data-act="reset">Start over from setup</button>
+    </div>
+    <div class="card">
+      <h3>Things to try</h3>
+      <p>Tap the cheat sheet email. Swipe a row left to mark it not important. Switch to <b>Other</b> and find the lab report email Surface missed.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   1. MAIL SOURCE
+   The sample inbox below stands in for Gmail (personal) and Microsoft
+   Graph (school). A real source only has to return the same shape:
+   { id, account: 'school'|'personal', from: {name, email}, subject, body, at: Date }
+   ===================================================================== */
+const MIN = 60 * 1000, HOUR = 60 * MIN, DAY = 24 * HOUR;
+const SAMPLE_INBOX = [
+  { id: 'm1', account: 'school', from: { name: 'Dr. Smith', email: 'smith@school.edu' }, ago: 50 * MIN,
+    subject: "Cheat sheet allowed for Friday's exam",
+    body: "Hi everyone,\n\nQuick update about Friday's exam. You may bring one handwritten cheat sheet, front and back, on a standard 8.5 x 11 page. Please put your name on it.\n\nSee you in class,\nDr. Smith" },
+  { id: 'm2', account: 'personal', from: { name: 'ShopRight Deals', email: 'deals@shopright.example' }, ago: 32 * MIN,
+    subject: '48-hour flash sale: 50% off everything',
+    body: "Our biggest sale of the season is here. Take 50% off everything in store and online for 48 hours only. Free shipping on orders over $25." },
+  { id: 'm3', account: 'school', from: { name: 'Campus Weekly', email: 'news@school.edu' }, ago: 2 * HOUR,
+    subject: 'This week on campus: trivia night, food trucks and more',
+    body: "Trivia night is back in the student center on Thursday. Food trucks will be on the quad all week. Read the full newsletter for club news and photos." },
+  { id: 'm4', account: 'school', from: { name: 'Prof. Alvarez', email: 'alvarez@school.edu' }, ago: 3 * HOUR,
+    subject: 'Tuesday class cancelled',
+    body: "Hello class,\n\nI have to travel for a conference, so our Tuesday class is cancelled. Please use the time to start reading chapter 7. We will meet again on Thursday at the usual time.\n\nBest,\nProf. Alvarez" },
+  { id: 'm5', account: 'personal', from: { name: 'Jamie Rivera', email: 'jamie@campuscoffee.example' }, ago: 5 * HOUR,
+    subject: "Can you cover Saturday's shift?",
+    body: "Hey!\n\nSam called out sick, so I need someone to cover the Saturday morning shift from 7 to 11. Let me know by tonight if you can take it.\n\nThanks,\nJamie" },
+  { id: 'm6', account: 'personal', from: { name: 'Pizza Palace', email: 'offers@pizzapalace.example' }, ago: 6 * HOUR,
+    subject: 'Your Tuesday 2-for-1 code is here',
+    body: "Order any large pizza on Tuesday and get a second one free. Use code TWOFOR1 at checkout." },
+  { id: 'm7', account: 'school', from: { name: 'Taylor Ng', email: 'taylor.ng@school.edu' }, ago: DAY + 4 * HOUR,
+    subject: 'Lab report upload failed',
+    body: "Hi,\n\nYour lab report upload for Biology 210 failed on our end. Can you resend the file to me before Thursday's lab so it counts?\n\nThanks,\nTaylor" },
+  { id: 'm8', account: 'school', from: { name: 'Career Services', email: 'careers@school.edu' }, ago: DAY + 6 * HOUR,
+    subject: 'Interview invitation: Brightline Analytics internship',
+    body: "Congratulations! Brightline Analytics would like to schedule a first-round interview for the summer analyst internship. Please pick a time slot by Wednesday at 5 pm using the scheduling link. Interviews are 30 minutes over video." },
+  { id: 'm9', account: 'personal', from: { name: 'StreamFlix', email: 'hello@streamflix.example' }, ago: DAY + 8 * HOUR,
+    subject: "New this week: 12 shows we think you'll love",
+    body: "Your weekly picks are ready. Twelve new shows and movies arrived this week, picked for you." },
+  { id: 'm10', account: 'school', from: { name: 'Registrar', email: 'registrar@school.edu' }, ago: DAY + 9 * HOUR,
+    subject: 'Early graduation application deadline',
+    body: "Students planning to graduate in December must submit the early graduation application by November 21. Late applications will move your graduation to May. You can apply in the student portal under Records." },
+  { id: 'm11', account: 'school', from: { name: 'Rec Center', email: 'rec@school.edu' }, ago: DAY + 10 * HOUR,
+    subject: 'Pool hours are changing',
+    body: "Starting next week the pool opens at 7 am on weekdays. Weekend hours stay the same." },
+  { id: 'm12', account: 'school', from: { name: 'Ms. Patel', email: 'patel@school.edu' }, ago: 2 * DAY + 3 * HOUR,
+    subject: 'Clinical placement paperwork due Monday',
+    body: "Hi,\n\nYour clinical placement forms are due to my office by Monday at noon. Bring the signed health record and the background check receipt. Without them you cannot start at the hospital next week.\n\nMs. Patel, Academic Advisor" },
+  { id: 'm13', account: 'personal', from: { name: 'LinkedUp', email: 'notify@linkedup.example' }, ago: 2 * DAY + 5 * HOUR,
+    subject: 'You appeared in 9 searches this week',
+    body: "See who has been looking at your profile. Upgrade to see all 9 searches." },
+  { id: 'm14', account: 'personal', from: { name: 'Mom', email: 'mom.voegele@example.com' }, ago: 2 * DAY + 7 * HOUR,
+    subject: 'Dinner Sunday?',
+    body: "Are you coming home for dinner on Sunday? Dad is making lasagna." },
+  { id: 'm15', account: 'school', from: { name: 'Dr. Smith', email: 'smith@school.edu' }, ago: 3 * DAY + 2 * HOUR,
+    subject: 'Grades posted for Quiz 3',
+    body: "Quiz 3 grades are now posted in the course portal. The class average was 82. Come to office hours on Wednesday if you have questions about your score." },
+  { id: 'm16', account: 'school', from: { name: 'Campus Bookstore', email: 'bookstore@school.edu' }, ago: 3 * DAY + 5 * HOUR,
+    subject: 'Rent your spring textbooks early',
+    body: "Spring textbook rentals are open. Rent early to get the best selection of used books." },
+];
+// emails that "arrive" when you press Simulate new email
+const INCOMING = [
+  { id: 'n1', account: 'school', from: { name: 'Dr. Smith', email: 'smith@school.edu' },
+    subject: "Room change for Friday's exam",
+    body: "Hi everyone,\n\nFriday's exam will be in Hayes Hall 204 instead of our usual room. Arrive 10 minutes early so we can start on time.\n\nDr. Smith" },
+  { id: 'n2', account: 'personal', from: { name: 'FlashFood', email: 'promo@flashfood.example' },
+    subject: '$5 off your next order', body: "Hungry? Take $5 off your next order this weekend with code SAVE5." },
+  { id: 'n3', account: 'personal', from: { name: 'Jamie Rivera', email: 'jamie@campuscoffee.example' },
+    subject: 'Schedule for next week is up',
+    body: "Hi team,\n\nNext week's schedule is posted in the back room. You are on Monday and Thursday evenings from 4 to 9. Swap requests are due by Friday.\n\nJamie" },
+  { id: 'n4', account: 'school', from: { name: 'Prof. Alvarez', email: 'alvarez@school.edu' },
+    subject: 'Midterm grades are posted',
+    body: "Midterm grades are now posted in the portal. Most of you did well on the case analysis. If your grade is below a C, please book a meeting with me this week." },
+  { id: 'n5', account: 'school', from: { name: 'Campus Weekly', email: 'news@school.edu' },
+    subject: 'Photos from homecoming weekend', body: "Relive homecoming with our photo gallery and a recap of the big game." },
+];
+
+const SampleSource = {
+  initial(now) { return SAMPLE_INBOX.map(m => ({ ...m, at: now - m.ago })); },
+  next(deliveredIds) { return INCOMING.find(m => !deliveredIds.includes(m.id)) || null; },
+};
+
+/* =====================================================================
+   2. RULES (no hidden machine learning: every flag has a reason)
+   ===================================================================== */
+const DEFAULT_KEYWORDS = ['exam', 'grade', 'deadline', 'cancelled', 'interview', 'due', 'quiz', 'midterm'];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const kwRegex = w => new RegExp('\\b' + reEsc(w).replace(/\s+/g, '\\s+'), 'i');
+
+function personFor(email) { return S.people.find(p => p.email.toLowerCase() === email.from.email.toLowerCase()); }
+
+function classify(m) {
+  const reasons = [];
+  const addr = m.from.email.toLowerCase();
+  if (S.overrides[m.id] === 'other') return { important: false, reasons: ['You marked this email not important'] };
+  if (S.overrides[m.id] === 'important') reasons.push('You marked this email important');
+  if (S.senders[addr] === 'ignore' && !reasons.length) return { important: false, reasons: [`You chose to always ignore ${m.from.name}`] };
+  const p = personFor(m);
+  if (p) reasons.push(`${p.name} is in your People (${p.label})`);
+  else if (S.senders[addr] === 'always') reasons.push(`You chose to always treat ${m.from.name} as important`);
+  if (!p && S.senders[addr] !== 'ignore') {
+    const text = m.subject + ' ' + m.body;
+    for (const k of S.keywords) if (k.on && kwRegex(k.word).test(text)) reasons.push(`Mentions “${k.word}”`);
+  }
+  return { important: reasons.length > 0, reasons };
+}
+
+/* =====================================================================
+   3. ON-DEVICE SUMMARY (extractive: picks the sentence that says the most)
+   ===================================================================== */
+const STOP = new Set('a an the and or for of to in on at by is are was be your you our we i it this that with from my me us can will about as up out so if do not have has here there all its'.split(' '));
+const ACTION = /\b(allowed|may bring|bring|cancel+ed|due|deadline|submit|resend|cover|pick|book|posted|moved|instead|must|need|interview|apply|arrive|required|by \w+day|until)\b/i;
+const WHEN = /\b(mon|tues|wednes|thurs|fri|satur|sun)day\b|\btoday\b|\btonight\b|\btomorrow\b|\bnext week\b|\b\d{1,2}(:\d\d)?\s?(am|pm)\b|\bnoon\b|\b(january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2}\b/i;
+const GREET = /^(hi|hello|hey|dear|thanks|thank you|best|see you|cheers|congratulations)\b/i;
+const words = s => (s.toLowerCase().match(/[a-z0-9']+/g) || []).map(w => w.replace(/'s$/, '')).filter(w => !STOP.has(w));
+
+function summarize(m) {
+  const subj = new Set(words(m.subject));
+  const sentences = m.body.replace(/\n+/g, ' \n ').split(/(?<=[.!?])\s+|\s\n\s/).map(s => s.trim()).filter(Boolean);
+  let best = null, bestScore = -Infinity;
+  sentences.forEach((s, i) => {
+    const w = words(s); if (w.length < 3) return;
+    let sc = 0;
+    for (const x of w) if (subj.has(x)) sc += 2;
+    if (ACTION.test(s)) sc += 2;
+    if (WHEN.test(s)) sc += 2;
+    if (GREET.test(s)) sc -= 4;
+    if (s.split(/\s+/).length < 7) sc -= 3;
+    sc -= i * 0.1; // earlier sentences win ties
+    if (sc > bestScore) { bestScore = sc; best = s; }
+  });
+  let out = (best || m.subject)
+    .replace(/^(quick update about [^.]*\.\s*)/i, '')
+    .replace(/^(just a reminder that|please note that|i wanted to let you know that)\s+/i, '');
+  out = out.charAt(0).toUpperCase() + out.slice(1);
+  if (out.length > 120) out = out.slice(0, 117).replace(/\s+\S*$/, '') + '…';
+  return out;
+}
+
+// suggest a keyword from a corrected email: first two-word phrase of the subject with no stop words
+function suggestKeyword(m) {
+  const toks = m.subject.toLowerCase().replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(Boolean);
+  const have = new Set(S.keywords.map(k => k.word.toLowerCase()));
+  for (let i = 0; i < toks.length - 1; i++) {
+    const a = toks[i], b = toks[i + 1];
+    if (!STOP.has(a) && !STOP.has(b) && a.length > 2 && b.length > 2 && !/\d/.test(a + b)) {
+      const ph = a + ' ' + b; if (!have.has(ph)) return ph;
+    }
+  }
+  const one = toks.find(t => !STOP.has(t) && t.length > 4 && !have.has(t));
+  return one || null;
+}
+
+function notifText(m) {
+  const p = personFor(m);
+  if (p && p.label !== 'Other') return `Email from your ${p.label.toLowerCase()}`;
+  return `Email from ${m.from.name}`;
+}
+
+/* =====================================================================
+   4. STATE (saved in this browser only)
+   ===================================================================== */
+const KEY = 'surface-prototype-v1';
+const fresh = () => ({
+  setupDone: false, step: 1,
+  accounts: { school: null, personal: null },
+  people: [], keywords: DEFAULT_KEYWORDS.map(word => ({ word, on: true })),
+  notify: false, senders: {}, overrides: {}, read: {}, delivered: [], arrived: [],
+  learned: [], startedAt: Date.now(),
+});
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch { S = fresh(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+
+function allMail() {
+  const base = SampleSource.initial(S.startedAt);
+  return [...S.arrived, ...base].sort((a, b) => b.at - a.at);
+}
+function mailById(id) { return allMail().find(m => m.id === id); }
+
+/* UI state (not saved) */
+const UI = { view: 'home', box: 'important', tab: 'all', openId: null, full: false };
+
+/* =====================================================================
+   5. RENDERING
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const app = $('app');
+const svg = (id, cls = '') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const initials = n => n.replace(/^(dr|prof|ms|mr|mrs)\.?\s+/i, '').split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
+const labelCls = l => l === 'Boss' ? 'boss' : l === 'Other' ? 'other' : '';
+
+function fmtTime(t) {
+  const d = new Date(t), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  return sameDay ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+function dayLabel(t) {
+  const d = new Date(t), now = new Date();
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === now.toDateString()) return 'Today';
+  if (d.toDateString() === y.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+function render() {
+  if (!S.setupDone) return renderSetup();
+  if (UI.view === 'detail') return renderDetail();
+  if (UI.view === 'settings') return renderSettings();
+  return renderHome();
+}
+
+/* ---------- setup ---------- */
+const SUGGESTED = () => {
+  const seen = new Map();
+  for (const m of SampleSource.initial(S.startedAt)) {
+    const e = m.from.email.toLowerCase();
+    const human = /^(dr|prof|ms|mr|mrs)\.?\s/i.test(m.from.name) || /^[a-z]+\.[a-z]+@school\.edu$/.test(e) || /campuscoffee/.test(e);
+    if (!human || S.people.some(p => p.email === e)) continue;
+    const label = /^(dr|prof)\.?\s/i.test(m.from.name) ? 'Professor' : /campuscoffee/.test(e) ? 'Boss' : 'Other';
+    seen.set(e, { name: m.from.name, email: e, label, from: m.account });
+  }
+  return [...seen.values()];
+};
+
+function renderSetup() {
+  const st = S.step;
+  if (st === 6) {
+    app.innerHTML = `<div class="allset">
+      <svg class="mark" style="width:84px;height:84px"><use href="#i-mark"/></svg>
+      <h1>You're all set.</h1>
+      <p style="color:var(--muted)">Surface is watching ${S.accounts.school && S.accounts.personal ? 'both inboxes' : 'your inbox'}. We'll tell you the moment something important arrives.</p>
+      <button class="btn primary block" data-act="finish">Go to my emails</button>
+    </div>`;
+    return;
+  }
+  const top = `<div class="setup-top">
+      <button class="icon-btn" data-act="back" aria-label="Back" ${st === 1 ? 'style="visibility:hidden"' : ''}>${svg('i-back')}</button>
+      <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="${st}"><span style="width:${st * 20}%"></span></div>
+      <span class="stepno">Step ${st} of 5</span>
+    </div>`;
+  let h = '', body = '', foot = '';
+  if (st === 1 || st === 2) {
+    const kind = st === 1 ? 'school' : 'personal';
+    const acct = S.accounts[kind];
+    h = st === 1 ? 'Connect your school email' : 'Connect your personal email';
+    const lead = st === 1 ? 'Surface reads your school inbox through Microsoft to find emails from professors and advisors.' : 'Add your personal Gmail too, so job and work emails get caught. You can skip this.';
+    body = `<div class="hero-art"><svg class="mark"><use href="#i-mark"/></svg></div>
+      <div class="connect">
+        <span class="dot ${kind}" style="width:14px;height:14px"></span>
+        <div class="meta"><b>${st === 1 ? 'School account' : 'Personal Gmail'}</b><span>${acct ? esc(acct) : st === 1 ? 'Microsoft 365 / Outlook' : 'Google'}</span></div>
+        ${acct ? `<span class="check" aria-label="Connected">${svg('i-check')}</span>` : `<button class="btn primary" data-act="connect" data-kind="${kind}">Connect</button>`}
+      </div>`;
+    foot = `<button class="btn primary block" data-act="next" ${st === 1 && !acct ? 'disabled' : ''}>Continue</button>
+      ${st === 2 && !acct ? '<button class="btn ghost block" data-act="next">Skip for now</button>' : ''}`;
+    app.innerHTML = `<div class="setup">${top}<h1>${h}</h1><p class="lead">${lead}</p><div class="body">${body}</div><div class="foot">${foot}</div></div>`;
+    return;
+  }
+  if (st === 3) {
+    const sug = SUGGESTED();
+    body = `${peopleEditor()}
+      ${sug.length ? `<div class="label">Suggested from your inbox</div>
+        ${sug.map(p => `<div class="row-person"><span class="dot ${p.from}"></span><div class="meta"><b>${esc(p.name)}</b><span>${esc(p.email)}</span></div>
+          <span class="tag ${labelCls(p.label)}">${p.label}</span><button class="mini" data-act="add-suggested" data-email="${esc(p.email)}">Add</button></div>`).join('')}` : ''}`;
+    app.innerHTML = `<div class="setup">${top}<h1>Who matters most?</h1><p class="lead">Email from these people is always important. Add professors, your advisor and your boss.</p>
+      <div class="body">${body}</div>
+      <div class="foot"><button class="btn primary block" data-act="next">Continue</button>${S.people.length ? '' : '<button class="btn ghost block" data-act="next">Skip, I\'ll do this later</button>'}</div></div>`;
+    return;
+  }
+  if (st === 4) {
+    app.innerHTML = `<div class="setup">${top}<h1>Pick your keywords</h1><p class="lead">Emails that mention these words are flagged, even from people you haven't added. Tap a word to switch it off.</p>
+      <div class="body">${keywordEditor()}</div>
+      <div class="foot"><button class="btn primary block" data-act="next">Continue</button></div></div>`;
+    return;
+  }
+  if (st === 5) {
+    app.innerHTML = `<div class="setup">${top}<h1>Turn on notifications</h1><p class="lead">So you hear about important emails right away. Surface only notifies you about emails it marks important.</p>
+      <div class="body">
+        <div class="banner show" style="position:relative;left:0;right:0;top:0;transform:none;cursor:default">
+          <svg class="mark"><use href="#i-mark"/></svg>
+          <span class="t"><span class="pill-imp">Important!</span> now</span>
+          <span class="m">Email from your professor</span>
+          <span class="s">Cheat sheet allowed for Friday's exam.</span>
+        </div>
+        ${S.notify ? `<div class="connect"><span class="check">${svg('i-check')}</span><div class="meta"><b>Notifications are on</b><span>You can change this in Settings.</span></div></div>` : ''}
+      </div>
+      <div class="foot">
+        ${S.notify ? '<button class="btn primary block" data-act="next">Finish</button>' : '<button class="btn primary block" data-act="notify-on">Turn on notifications</button><button class="btn ghost block" data-act="next">Not now</button>'}
+      </div></div>`;
+  }
+}
+
+function peopleEditor() {
+  return `<form class="addform" id="add-person" autocomplete="off">
+      <input type="text" id="person-input" placeholder="Name or email address" aria-label="Name or email address">
+      <select id="person-label" aria-label="Label"><option>Professor</option><option>Boss</option><option>Other</option></select>
+      <button class="btn primary" type="submit" style="grid-column:1/-1">Add person</button>
+    </form>
+    ${S.people.length ? `<div class="label">Your people</div>` + S.people.map(p => `<div class="row-person">
+        <div class="meta"><b>${esc(p.name)}</b><span>${esc(p.email)}</span></div>
+        <span class="tag ${labelCls(p.label)}">${p.label}</span>
+        <button class="icon-btn" data-act="remove-person" data-email="${esc(p.email)}" aria-label="Remove ${esc(p.name)}">✕</button></div>`).join('') : ''}`;
+}
+
+function keywordEditor() {
+  return `<div class="chips">${S.keywords.map((k, i) => `<button class="chip ${k.on ? 'on' : ''}" data-act="toggle-kw" data-i="${i}" aria-pressed="${k.on}">${esc(k.word)}</button>`).join('')}</div>
+    <form class="addform" id="add-kw" autocomplete="off">
+      <input type="text" id="kw-input" placeholder="Add your own, like “lab report”" aria-label="New keyword" maxlength="30">
+      <button class="btn primary" type="submit">Add</button>
+    </form>`;
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  const all = allMail().map(m => ({ m, c: classify(m) }));
+  const imp = all.filter(x => x.c.important), oth = all.filter(x => !x.c.important);
+  const unreadImp = imp.filter(x => !S.read[x.m.id]).length;
+  let list = UI.box === 'important' ? imp : oth;
+  if (UI.tab !== 'all') list = list.filter(x => x.m.account === UI.tab);
+  const groups = [];
+  for (const x of list) { const g = dayLabel(x.m.at); let last = groups[groups.length - 1]; if (!last || last.g !== g) groups.push(last = { g, rows: [] }); last.rows.push(x); }
+  const rows = groups.map(g => `<div class="day">${g.g}</div>` + g.rows.map(({ m }) => {
+    const p = personFor(m);
+    const who = `${esc(m.from.name)}${p ? ` <span class="lbl">· ${p.label}</span>` : ''}`;
+    return `<div class="mail ${S.read[m.id] ? '' : 'unread'}" data-id="${m.id}">
+      ${UI.box === 'important' ? '<div class="under">Not important</div>' : ''}
+      <div class="row" role="button" tabindex="0" data-act="open" data-id="${m.id}">
+        <span class="dot ${m.account}" title="${m.account === 'school' ? 'School' : 'Personal'}"></span>
+        <span class="who">${who}</span>
+        <span class="time">${fmtTime(m.at)}</span>
+        <span class="sum">${esc(summarize(m))}</span>
+        ${UI.box === 'other' ? `<button class="mini mk" data-act="mark-important" data-id="${m.id}">Mark important</button>` : ''}
+      </div></div>`;
+  }).join('')).join('');
+  const empty = UI.box === 'important'
+    ? `<div class="empty">${'<svg class="mark" style="width:56px;height:56px"><use href="#i-mark"/></svg>'}<b>No important emails.</b>You're all caught up.</div>`
+    : `<div class="empty"><b>Nothing here.</b>Every email in this view was marked important.</div>`;
+  app.innerHTML = `<div class="top">
+      <div class="top-row"><svg class="mark"><use href="#i-mark"/></svg><h1>Surface</h1>
+        <button class="icon-btn" data-act="settings" aria-label="Settings">${svg('i-gear')}</button></div>
+      <div class="switch" role="group" aria-label="Which emails">
+        <button aria-pressed="${UI.box === 'important'}" data-act="box" data-box="important">Important${unreadImp ? `<span class="count">${unreadImp}</span>` : ''}</button>
+        <button aria-pressed="${UI.box === 'other'}" data-act="box" data-box="other">Other</button>
+      </div>
+      <div class="tabs" role="group" aria-label="Account">
+        ${[['all', 'All'], ['school', 'School'], ['personal', 'Personal']].map(([k, l]) => `<button aria-pressed="${UI.tab === k}" data-act="tab" data-tab="${k}">${k !== 'all' ? `<span class="dot ${k}"></span>` : ''}${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="scroll" id="list">${rows || empty}
+      ${rows ? `<p class="hint">${UI.box === 'important' ? 'Swipe a row left if it isn’t important.' : 'Surface missed one? Tap Mark important.'}</p>` : ''}
+    </div>`;
+  wireSwipes();
+}
+
+/* ---------- detail ---------- */
+function renderDetail() {
+  const m = mailById(UI.openId); if (!m) { UI.view = 'home'; return render(); }
+  const p = personFor(m), c = classify(m);
+  app.innerHTML = `<div class="bar"><button class="icon-btn" data-act="home" aria-label="Back to list">${svg('i-back')}</button><span class="title">${c.important ? 'Important' : 'Other'}</span></div>
+    <div class="scroll"><div class="detail">
+      <div class="sender"><span class="avatar ${m.account}">${esc(initials(m.from.name))}</span>
+        <div class="meta"><b>${esc(m.from.name)}${p ? ` · ${p.label}` : ''}</b><span>${esc(m.from.email)} · ${m.account === 'school' ? 'School' : 'Personal'} · ${fmtTime(m.at)}</span></div></div>
+      <h2 class="subject">${esc(m.subject)}</h2>
+      ${UI.full ? `<div class="full">${esc(m.body)}</div><p class="note">In the finished app this opens the email in your ${m.account === 'school' ? 'Outlook' : 'Gmail'} app.</p>`
+        : `<div class="summary"><span class="k">SUMMARY</span><p>${esc(summarize(m))}</p></div>
+           <button class="btn block" data-act="full">Open full email</button>`}
+      <div class="why"><span class="label">${c.important ? 'Why Surface flagged this' : 'Why this is in Other'}</span>
+        <ul>${(c.reasons.length ? c.reasons : ['It isn’t from one of your people and doesn’t mention a keyword']).map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>
+      ${c.important ? `<button class="link muted" data-act="not-important" data-id="${m.id}">Not important</button>`
+        : `<button class="btn primary block" data-act="mark-important" data-id="${m.id}">Mark important</button>`}
+    </div></div>`;
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  const learnedSenders = Object.entries(S.senders);
+  const nameOf = e => (allMail().find(m => m.from.email.toLowerCase() === e) || { from: { name: e } }).from.name;
+  app.innerHTML = `<div class="bar"><button class="icon-btn" data-act="home" aria-label="Back">${svg('i-back')}</button><span class="title">Settings</span></div>
+    <div class="scroll">
+      <div class="sect"><h3>Accounts</h3>
+        ${['school', 'personal'].map(k => `<div class="line-row"><span class="dot ${k}"></span><div class="meta" style="flex:1"><b>${k === 'school' ? 'School' : 'Personal'}</b><span>${S.accounts[k] ? esc(S.accounts[k]) : 'Not connected'}</span></div>
+          ${S.accounts[k] ? `<button class="mini" data-act="disconnect" data-kind="${k}">Disconnect</button>` : `<button class="mini" data-act="connect" data-kind="${k}">Connect</button>`}</div>`).join('')}
+      </div>
+      <div class="sect"><h3>People</h3>${peopleEditor()}</div>
+      <div class="sect"><h3>Keywords</h3>${keywordEditor()}</div>
+      <div class="sect"><h3>Notifications</h3>
+        <div class="line-row"><div class="meta"><b>Notify me about important emails</b><span>Banner with a short summary</span></div>
+          <button class="toggle" role="switch" aria-checked="${S.notify}" data-act="toggle-notify" aria-label="Notifications"></button></div></div>
+      <div class="sect"><h3>What Surface learned</h3>
+        ${learnedSenders.length ? learnedSenders.map(([e, v]) => `<div class="line-row"><div class="meta"><b>${esc(nameOf(e))}</b><span>${v === 'ignore' ? 'Always ignore' : 'Always important'} · ${esc(e)}</span></div><button class="mini" data-act="undo-sender" data-email="${esc(e)}">Undo</button></div>`).join('')
+          : '<p class="note">Nothing yet. When you mark an email important or not important, the choice shows up here so you can undo it.</p>'}
+        ${S.learned.length ? `<p class="note">Keywords you added from corrections: ${S.learned.map(esc).join(', ')}. Remove them under Keywords.</p>` : ''}
+      </div>
+      <div class="sect"><h3>Prototype</h3>
+        <div class="line-row"><div class="meta"><b>Simulate new email</b><span>Delivers the next sample email</span></div><button class="mini" data-act="simulate">Send</button></div>
+        <div class="line-row"><div class="meta"><b>Start over</b><span>Clears everything and runs setup again</span></div><button class="mini" data-act="reset" style="color:var(--bad)">Reset</button></div>
+        <p class="note">Surface prototype · sample emails only · saved in this browser.</p>
+      </div>
+    </div>`;
+}
+
+/* =====================================================================
+   6. SHEETS, BANNER, TOAST
+   ===================================================================== */
+function sheet(html) { $('sheet').innerHTML = html; $('scrim').hidden = false; $('sheet').querySelector('button, input')?.focus(); }
+function closeSheet() { $('scrim').hidden = true; $('sheet').innerHTML = ''; }
+$('scrim').addEventListener('click', e => { if (e.target === $('scrim')) closeSheet(); });
+
+let toastTimer;
+function toast(msg, undo) {
+  const t = $('toast');
+  t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button">Undo</button>' : ''}`;
+  if (undo) t.querySelector('button').onclick = () => { undo(); t.classList.remove('show'); };
+  t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+let bannerTimer;
+function showBanner(m) {
+  const b = $('banner');
+  b.innerHTML = `<svg class="mark"><use href="#i-mark"/></svg><span class="t"><span class="pill-imp">Important!</span> now</span>
+    <span class="m">${esc(notifText(m))}</span><span class="s">${esc(summarize(m))}</span>`;
+  b.dataset.id = m.id; b.classList.add('show');
+  clearTimeout(bannerTimer); bannerTimer = setTimeout(() => b.classList.remove('show'), 6000);
+  try { if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification('Important! ' + notifText(m), { body: summarize(m) }); } catch {}
+}
+$('banner').addEventListener('click', () => { const id = $('banner').dataset.id; $('banner').classList.remove('show'); if (id) openMail(id); });
+
+/* =====================================================================
+   7. ACTIONS
+   ===================================================================== */
+function openMail(id) { S.read[id] = true; save(); UI.view = 'detail'; UI.openId = id; UI.full = false; render(); $('app').querySelector('.scroll')?.scrollTo(0, 0); }
+
+function connectFlow(kind) {
+  const school = kind === 'school';
+  sheet(`<h2>${school ? 'Sign in to your school account' : 'Sign in with Google'}</h2>
+    <p>Demo sign-in. The finished app uses ${school ? 'Microsoft Graph' : 'the Gmail API'} here.</p>
+    <input type="email" id="acct-email" value="${school ? 'student@school.edu' : 'student.personal@gmail.com'}" aria-label="Email address">
+    <div class="perm"><b>Surface would like to:</b>
+      <div><span class="check" style="width:22px;height:22px">${svg('i-check')}</span> Read your email to find important messages</div>
+      <div><span class="check" style="width:22px;height:22px;background:var(--bad)">✕</span> Never send, delete or change your email</div></div>
+    <div class="acts"><button class="btn primary block" data-act="allow" data-kind="${kind}">Allow</button><button class="btn ghost block" data-act="close">Cancel</button></div>`);
+}
+
+function notImportant(id) {
+  const m = mailById(id); if (!m) return;
+  const prev = S.overrides[id];
+  S.overrides[id] = 'other'; save();
+  UI.view = 'home'; render();
+  toast('Moved to Other', () => { if (prev) S.overrides[id] = prev; else delete S.overrides[id]; save(); render(); });
+  const addr = m.from.email.toLowerCase();
+  if (!personFor(m) && S.senders[addr] !== 'ignore') {
+    sheet(`<h2>Always ignore emails from ${esc(m.from.name)}?</h2><p>${esc(m.from.email)}. You can undo this in Settings.</p>
+      <div class="acts"><button class="btn primary block" data-act="ignore-sender" data-email="${esc(addr)}">Yes, always ignore</button><button class="btn ghost block" data-act="close">No, just this one</button></div>`);
+  } else if (personFor(m)) {
+    sheet(`<h2>${esc(m.from.name)} is in your People</h2><p>Their other emails will still be important. Remove them from People in Settings if you want that to stop.</p>
+      <div class="acts"><button class="btn primary block" data-act="close">OK</button></div>`);
+  }
+}
+
+function markImportant(id) {
+  const m = mailById(id); if (!m) return;
+  S.overrides[id] = 'important'; S.read[id] = true; save();
+  UI.box = 'important'; UI.view = 'home'; render();
+  const kw = suggestKeyword(m);
+  sheet(`<h2>Always treat ${esc(m.from.name)} as important?</h2><p>Add them to your People so their emails are always flagged.</p>
+    <select id="mi-label" aria-label="Label"><option>Professor</option><option>Boss</option><option selected>Other</option></select>
+    <div class="acts"><button class="btn primary block" data-act="always-sender" data-id="${id}" data-kw="${esc(kw || '')}">Yes, add to People</button>
+    <button class="btn ghost block" data-act="kw-suggest" data-kw="${esc(kw || '')}">Not now</button></div>`);
+}
+
+function kwSuggest(kw) {
+  if (!kw) return closeSheet();
+  sheet(`<h2>Add “${esc(kw)}” as a keyword?</h2><p>Emails that mention “${esc(kw)}” will be flagged from now on.</p>
+    <div class="acts"><button class="btn primary block" data-act="add-kw" data-kw="${esc(kw)}">Add keyword</button><button class="btn ghost block" data-act="close">No thanks</button></div>`);
+}
+
+function simulate() {
+  if (!S.setupDone) { toast('Finish setup first'); return; }
+  const n = SampleSource.next(S.delivered);
+  if (!n) { toast('No more sample emails. Reset to replay them.'); return; }
+  const m = { ...n, at: Date.now() };
+  S.delivered.push(n.id); S.arrived.push(m); save();
+  if (UI.view === 'home') render();
+  const c = classify(m);
+  if (c.important && S.notify) showBanner(m);
+  else toast(c.important ? 'New important email (notifications are off)' : `New email from ${m.from.name} went to Other`);
+}
+
+function addPerson(raw, label) {
+  raw = raw.trim(); if (!raw) return;
+  let email = raw, name = raw;
+  if (raw.includes('@')) {
+    const hit = allMail().find(m => m.from.email.toLowerCase() === raw.toLowerCase());
+    name = hit ? hit.from.name : raw.split('@')[0];
+  } else {
+    const hit = allMail().find(m => m.from.name.toLowerCase().includes(raw.toLowerCase()));
+    email = hit ? hit.from.email : raw.toLowerCase().replace(/\s+/g, '.') + '@unknown';
+    name = hit ? hit.from.name : raw;
+  }
+  email = email.toLowerCase();
+  if (S.people.some(p => p.email === email)) { toast(`${name} is already in People`); return; }
+  S.people.push({ name, email, label }); save(); render();
+  toast(`Added ${name}`);
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  switch (a) {
+    case 'back': S.step = Math.max(1, S.step - 1); save(); render(); break;
+    case 'next': S.step++; save(); render(); break;
+    case 'connect': connectFlow(el.dataset.kind); break;
+    case 'allow': S.accounts[el.dataset.kind] = ($('acct-email')?.value || '').trim() || (el.dataset.kind === 'school' ? 'student@school.edu' : 'student.personal@gmail.com'); save(); closeSheet(); render(); toast('Connected'); break;
+    case 'disconnect': { const k = el.dataset.kind, prev = S.accounts[k]; S.accounts[k] = null; save(); render(); toast('Disconnected', () => { S.accounts[k] = prev; save(); render(); }); break; }
+    case 'close': closeSheet(); break;
+    case 'add-suggested': { const p = SUGGESTED().find(x => x.email === el.dataset.email); if (p) { S.people.push({ name: p.name, email: p.email, label: p.label }); save(); render(); } break; }
+    case 'remove-person': { const i = S.people.findIndex(p => p.email === el.dataset.email); if (i > -1) { const [p] = S.people.splice(i, 1); save(); render(); toast(`Removed ${p.name}`, () => { S.people.splice(i, 0, p); save(); render(); }); } break; }
+    case 'toggle-kw': { const k = S.keywords[+el.dataset.i]; k.on = !k.on; save(); render(); break; }
+    case 'notify-on':
+      S.notify = true; save(); render();
+      try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch {}
+      break;
+    case 'finish': S.setupDone = true; UI.view = 'home'; save(); render(); setTimeout(() => { if (S.notify) { const m = mailById('m1'); if (m && !S.read.m1) showBanner(m); } }, 900); break;
+    case 'box': UI.box = el.dataset.box; render(); break;
+    case 'tab': UI.tab = el.dataset.tab; render(); break;
+    case 'open': if (!e.target.closest('.mini') && !swipeJustHappened) openMail(el.dataset.id); break;
+    case 'home': UI.view = 'home'; render(); break;
+    case 'settings': UI.view = 'settings'; render(); break;
+    case 'full': UI.full = true; render(); break;
+    case 'not-important': notImportant(el.dataset.id); break;
+    case 'mark-important': e.stopPropagation(); markImportant(el.dataset.id); break;
+    case 'ignore-sender': S.senders[el.dataset.email] = 'ignore'; save(); closeSheet(); render(); toast('Got it. Surface will ignore this sender.'); break;
+    case 'always-sender': {
+      const m = mailById(el.dataset.id); const label = $('mi-label')?.value || 'Other';
+      if (m && !personFor(m)) S.people.push({ name: m.from.name, email: m.from.email.toLowerCase(), label });
+      if (m) delete S.senders[m.from.email.toLowerCase()];
+      save(); render(); kwSuggest(el.dataset.kw); break;
+    }
+    case 'kw-suggest': kwSuggest(el.dataset.kw); break;
+    case 'add-kw': { const w = el.dataset.kw; if (w && !S.keywords.some(k => k.word === w)) { S.keywords.push({ word: w, on: true }); S.learned.push(w); } save(); closeSheet(); render(); toast(`Added “${w}”`); break; }
+    case 'toggle-notify':
+      S.notify = !S.notify; save(); render();
+      if (S.notify) try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch {}
+      break;
+    case 'undo-sender': delete S.senders[el.dataset.email]; save(); render(); toast('Undone'); break;
+    case 'simulate': simulate(); break;
+    case 'reset':
+      sheet(`<h2>Start over?</h2><p>This clears your people, keywords and corrections and runs setup again.</p>
+        <div class="acts"><button class="btn primary block" data-act="reset-yes" style="background:var(--bad)">Start over</button><button class="btn ghost block" data-act="close">Cancel</button></div>`);
+      break;
+    case 'reset-yes': S = fresh(); save(); UI.view = 'home'; UI.box = 'important'; UI.tab = 'all'; closeSheet(); render(); break;
+  }
+});
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'add-person') addPerson($('person-input').value, $('person-label').value);
+  if (e.target.id === 'add-kw') {
+    const w = $('kw-input').value.trim().toLowerCase();
+    if (!w) return;
+    if (S.keywords.some(k => k.word === w)) { toast(`“${w}” is already a keyword`); return; }
+    S.keywords.push({ word: w, on: true }); save(); render(); toast(`Added “${w}”`);
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('scrim').hidden) closeSheet();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.row[data-act=open]')) { e.preventDefault(); openMail(e.target.dataset.id); }
+});
+
+/* swipe left on an Important row to mark it not important */
+let swipeJustHappened = false;
+function wireSwipes() {
+  if (UI.box !== 'important') return;
+  app.querySelectorAll('.mail .row').forEach(row => {
+    let x0 = null, y0 = 0, dx = 0, dragging = false;
+    row.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; dx = 0; dragging = false; });
+    row.addEventListener('pointermove', e => {
+      if (x0 === null) return;
+      dx = Math.min(0, e.clientX - x0);
+      if (!dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.clientY - y0)) { dragging = true; row.setPointerCapture(e.pointerId); }
+      if (dragging) row.style.transform = `translateX(${dx}px)`;
+    });
+    const end = () => {
+      if (x0 === null) return;
+      if (dragging) {
+        swipeJustHappened = true; setTimeout(() => swipeJustHappened = false, 50);
+        if (dx < -90) { row.style.transition = 'transform .2s'; row.style.transform = 'translateX(-110%)'; setTimeout(() => notImportant(row.dataset.id), 180); }
+        else { row.style.transition = 'transform .2s'; row.style.transform = ''; setTimeout(() => row.style.transition = '', 220); }
+      }
+      x0 = null; dragging = false;
+    };
+    row.addEventListener('pointerup', end); row.addEventListener('pointercancel', end);
+  });
+}
+
+/* clock in the phone's status bar */
+const tick = () => { $('clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); };
+tick(); setInterval(tick, 30000);
+
+render();
+</script>
+</body>
+</html>
