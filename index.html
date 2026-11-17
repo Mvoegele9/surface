@@ -231,6 +231,19 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
 .get p { color: rgba(255,255,255,0.86); }
 .get .eyebrow { color: #fff; }
 .get .btn-primary { background: #fff; color: var(--blue); }
+
+/* ---- photos ---- */
+.photo-band { position: relative; padding-block: 0; min-height: 460px; display: grid; align-items: end; overflow: hidden; background: var(--ink); }
+section.photo-band, section.photo-band + section { border-top: 0; }
+.photo-band img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; max-width: none; }
+.photo-band::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,12,24,0) 25%, rgba(8,12,24,.82) 100%); }
+.band-copy { position: relative; z-index: 1; padding-block: 56px; width: 100%; color: #fff; display: grid; gap: 10px; }
+.band-kicker { font-weight: 700; font-size: .95rem; color: #FFC9A1; }
+.band-line { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.9rem); line-height: 1.1; letter-spacing: -0.03em; max-width: 19em; text-wrap: balance; }
+.left { display: grid; gap: 18px; min-width: 0; }
+.pic { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); }
+footer a { color: inherit; }
+@media (max-width: 720px) { .photo-band { min-height: 360px; } .band-copy { padding-block: 36px; } }
 </style>
 </head>
 <body>
@@ -284,6 +297,14 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
     </div>
   </div>
 
+  <section class="photo-band" aria-label="Students walking on campus">
+    <img src="photos/campus-walk.jpg" alt="College students walking across campus beneath a stone archway" loading="lazy" style="object-position:center 55%">
+    <div class="wrap band-copy">
+      <p class="band-kicker">Between classes</p>
+      <p class="band-line">Ten minutes. Forty unread emails.<br>Surface finds the one that matters.</p>
+    </div>
+  </section>
+
   <section id="problem">
     <div class="wrap">
       <div class="head">
@@ -292,9 +313,12 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
         <p class="lede">Students get tens of emails a day across two accounts. The one that matters sits between a sale and a newsletter.</p>
       </div>
       <div class="problem-grid">
+        <div class="left">
+        <img class="pic" src="photos/lecture-phones.jpg" alt="Students in a lecture hall looking at their phones" loading="lazy">
         <div class="quote">
           <p>I check my email as much as I can, and I still miss things. My professor sent an email saying we could bring a cheat sheet to a really hard exam. I never saw it, so I walked in without one and did worse than I could have.</p>
           <span class="src">From the founder's own experience.</span>
+        </div>
         </div>
         <div class="stats">
           <div class="stat">
@@ -356,6 +380,14 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
         </div>
         <p class="notif-note">Wrong call? Tap <b>Not important</b> or <b>Mark important</b>. Surface remembers the sender, and you can see and undo everything it learned in Settings.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="photo-band" aria-label="A student studying in a library">
+    <img src="photos/library.jpg" alt="A student studying at a long table in a large university library" loading="lazy" style="object-position:center 45%">
+    <div class="wrap band-copy">
+      <p class="band-kicker">Study mode</p>
+      <p class="band-line">Stay focused in the library.<br>Surface only buzzes when it matters.</p>
     </div>
   </section>
 
@@ -467,7 +499,7 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
 <footer>
   <div class="wrap">
     <span>Surface · a student class project</span>
-    <span>Not affiliated with Microsoft or Google.</span>
+    <span>Not affiliated with Microsoft or Google. Photos by <a href="https://unsplash.com/photos/students-walking-through-a-university-campus-archway-MUiv880yORo" target="_blank" rel="noopener">Brelyn Bashrum</a>, <a href="https://unsplash.com/photos/students-looking-at-phones-in-a-lecture-hall-QCNJ3xGnFR4" target="_blank" rel="noopener">Vitaly Gariev</a> and <a href="https://unsplash.com/photos/students-study-in-a-beautiful-large-library-Ma7aOy5mMp0" target="_blank" rel="noopener">Zoshua Colah</a> on Unsplash.</span>
   </div>
 </footer>
 
