@@ -211,6 +211,28 @@ input:focus, select:focus { outline: 2px solid var(--blue); border-color: transp
 .welcome .lead { color: var(--muted); }
 .welcome .fine { font-size: .8rem; color: var(--muted); text-align: center; }
 .allset .snap { width: 100%; max-width: 300px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 22px; display: block; }
+
+/* lock screen */
+.lock { position: absolute; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; color: #fff; background: #0b1020 url(photos/campus-walk-tall.jpg) center 35% / cover no-repeat; padding: 70px 14px 26px; }
+.lock[hidden] { display: none; }
+.lock::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,10,22,.55), rgba(6,10,22,.25) 40%, rgba(6,10,22,.7)); }
+.lock > * { position: relative; }
+.lock .lk-date { font-weight: 600; font-size: 1rem; opacity: .9; }
+.lock .lk-time { font-family: var(--font-display); font-weight: 700; font-size: 5.2rem; line-height: 1; letter-spacing: -0.03em; margin: 2px 0 26px; }
+.lock .stack { width: 100%; display: grid; gap: 8px; }
+.ln { width: 100%; display: grid; grid-template-columns: 38px 1fr; gap: 2px 12px; align-items: start; text-align: left; border: 0; border-radius: 22px; padding: 12px 14px; background: rgba(245,247,251,.84); color: #0F1A2E; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); cursor: pointer; box-shadow: 0 10px 30px -14px rgba(0,0,0,.6); }
+.ln .app-ic { grid-row: span 3; width: 38px; height: 38px; border-radius: 10px; background: #2F5BEA; display: grid; place-items: center; color: #fff; }
+.ln .app-ic svg { width: 28px; height: 28px; }
+.ln .hd { display: flex; justify-content: space-between; font-size: .72rem; font-weight: 700; letter-spacing: .04em; color: #56627A; }
+.ln .tt { font-weight: 800; font-size: .95rem; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.ln .tt .pill-imp { font-size: .68rem; }
+.ln .bd { font-size: .88rem; line-height: 1.35; color: #24304A; }
+.ln.ghost { transform: scale(.93); margin-top: -20px; height: 24px; padding: 0; cursor: default; }
+.lock .quiet { margin-top: 14px; font-size: .82rem; opacity: .9; text-align: center; max-width: 280px; }
+.lock .lk-foot { margin-top: auto; display: grid; justify-items: center; gap: 12px; font-size: .8rem; opacity: .95; }
+.lock .lk-foot button { background: rgba(255,255,255,.18); color: #fff; border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
+.lock .home-bar { width: 130px; height: 5px; border-radius: 9px; background: rgba(255,255,255,.85); }
+.on-lock .status { color: #fff; z-index: 41; }
 </style>
 </head>
 <body>
@@ -238,6 +260,7 @@ input:focus, select:focus { outline: 2px solid var(--blue); border-color: transp
       <button class="banner" id="banner" type="button" aria-live="polite"></button>
       <div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
       <div class="toast" id="toast" role="status"></div>
+      <div class="lock" id="lock" hidden role="dialog" aria-label="Lock screen preview"></div>
     </div>
   </div>
   <aside class="demo" aria-label="Prototype controls">
@@ -248,6 +271,8 @@ input:focus, select:focus { outline: 2px solid var(--blue); border-color: transp
       <h3>Try it</h3>
       <p>Send a new email to the inbox and watch for the notification.</p>
       <button class="btn primary" type="button" data-act="simulate">Simulate new email</button>
+      <button class="btn" type="button" data-act="simulate-locked">New email while phone is locked</button>
+      <button class="btn" type="button" data-act="lock-preview">See the lock screen notification</button>
       <button class="btn" type="button" data-act="reset">Start over from setup</button>
     </div>
     <div class="card">
@@ -554,6 +579,7 @@ function renderSetup() {
           <span class="m">Email from your professor</span>
           <span class="s">Cheat sheet allowed for Friday's exam.</span>
         </div>
+        <button class="link" data-act="lock-preview">See it on the lock screen</button>
         ${S.notify ? `<div class="connect"><span class="check">${svg('i-check')}</span><div class="meta"><b>Notifications are on</b><span>You can change this in Settings.</span></div></div>` : ''}
       </div>
       <div class="foot">
@@ -657,7 +683,8 @@ function renderSettings() {
       <div class="sect"><h3>Keywords</h3>${keywordEditor()}</div>
       <div class="sect"><h3>Notifications</h3>
         <div class="line-row"><div class="meta"><b>Notify me about important emails</b><span>Banner with a short summary</span></div>
-          <button class="toggle" role="switch" aria-checked="${S.notify}" data-act="toggle-notify" aria-label="Notifications"></button></div></div>
+          <button class="toggle" role="switch" aria-checked="${S.notify}" data-act="toggle-notify" aria-label="Notifications"></button></div>
+        <div class="line-row"><div class="meta"><b>Preview a notification</b><span>See how it looks on your lock screen</span></div><button class="mini" data-act="lock-preview">Preview</button></div></div>
       <div class="sect"><h3>What Surface learned</h3>
         ${learnedSenders.length ? learnedSenders.map(([e, v]) => `<div class="line-row"><div class="meta"><b>${esc(nameOf(e))}</b><span>${v === 'ignore' ? 'Always ignore' : 'Always important'} · ${esc(e)}</span></div><button class="mini" data-act="undo-sender" data-email="${esc(e)}">Undo</button></div>`).join('')
           : '<p class="note">Nothing yet. When you mark an email important or not important, the choice shows up here so you can undo it.</p>'}
@@ -696,6 +723,37 @@ function showBanner(m) {
   try { if ('Notification' in window && Notification.permission === 'granted' && document.hidden) new Notification('Important! ' + notifText(m), { body: summarize(m) }); } catch {}
 }
 $('banner').addEventListener('click', () => { const id = $('banner').dataset.id; $('banner').classList.remove('show'); if (id) openMail(id); });
+
+/* lock screen: how a Surface notification looks when the phone is locked */
+function showLock(m) {
+  if (!m) return;
+  const now = new Date();
+  const today = allMail().filter(x => new Date(x.at).toDateString() === now.toDateString());
+  const quiet = today.filter(x => !classify(x).important).length;
+  const moreImp = allMail().filter(x => x.id !== m.id && classify(x).important && !S.read[x.id]).length;
+  $('lock').innerHTML = `
+    <div class="lk-date">${now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+    <div class="lk-time">${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AP]M$/i, '')}</div>
+    <div class="stack">
+      <button class="ln" type="button" data-act="lock-open" data-id="${m.id}">
+        <span class="app-ic">${svg('i-mark')}</span>
+        <span class="hd"><span>SURFACE</span><span>now</span></span>
+        <span class="tt"><span class="pill-imp">Important!</span> ${esc(notifText(m))}</span>
+        <span class="bd">${esc(summarize(m))}</span>
+      </button>
+      ${moreImp ? '<div class="ln ghost" aria-hidden="true"></div>' : ''}
+    </div>
+    ${quiet ? `<p class="quiet">Surface stayed quiet for the ${quiet} other email${quiet === 1 ? '' : 's'} you got today.</p>` : ''}
+    <div class="lk-foot"><span>Tap the notification to open it</span><button type="button" data-act="lock-close">Close preview</button><span class="home-bar"></span></div>`;
+  $('lock').hidden = false;
+  $('screen').classList.add('on-lock');
+  $('lock').querySelector('.ln')?.focus();
+}
+function hideLock() { $('lock').hidden = true; $('screen').classList.remove('on-lock'); }
+function lockSample() {
+  const imp = allMail().filter(x => classify(x).important);
+  return imp.find(x => !S.read[x.id]) || imp[0] || mailById('m1');
+}
 
 /* =====================================================================
    7. ACTIONS
@@ -746,7 +804,7 @@ function kwSuggest(kw) {
     <div class="acts"><button class="btn primary block" data-act="add-kw" data-kw="${esc(kw)}">Add keyword</button><button class="btn ghost block" data-act="close">No thanks</button></div>`);
 }
 
-function simulate() {
+function simulate(locked = false) {
   if (!S.setupDone) { toast('Finish setup first'); return; }
   const n = SampleSource.next(S.delivered);
   if (!n) { toast('No more sample emails. Reset to replay them.'); return; }
@@ -754,6 +812,11 @@ function simulate() {
   S.delivered.push(n.id); S.arrived.push(m); save();
   if (UI.view === 'home') render();
   const c = classify(m);
+  if (locked) {
+    if (c.important && S.notify) { showLock(m); return; }
+    toast(c.important ? 'Notifications are off, so the phone stayed quiet' : `${m.from.name} went to Other. Your phone stayed quiet.`);
+    return;
+  }
   if (c.important && S.notify) showBanner(m);
   else toast(c.important ? 'New important email (notifications are off)' : `New email from ${m.from.name} went to Other`);
 }
@@ -815,7 +878,11 @@ document.addEventListener('click', e => {
       if (S.notify) try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); } catch {}
       break;
     case 'undo-sender': delete S.senders[el.dataset.email]; save(); render(); toast('Undone'); break;
-    case 'simulate': simulate(); break;
+    case 'simulate': hideLock(); simulate(); break;
+    case 'simulate-locked': hideLock(); simulate(true); break;
+    case 'lock-preview': showLock(lockSample()); break;
+    case 'lock-close': hideLock(); break;
+    case 'lock-open': hideLock(); closeSheet(); if (!S.setupDone) { toast('Finish setup to open emails'); break; } openMail(el.dataset.id); break;
     case 'reset':
       sheet(`<h2>Start over?</h2><p>This clears your people, keywords and corrections and runs setup again.</p>
         <div class="acts"><button class="btn primary block" data-act="reset-yes" style="background:var(--bad)">Start over</button><button class="btn ghost block" data-act="close">Cancel</button></div>`);
@@ -836,6 +903,7 @@ document.addEventListener('submit', e => {
 });
 
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('lock').hidden) hideLock();
   if (e.key === 'Escape' && !$('scrim').hidden) closeSheet();
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.row[data-act=open]')) { e.preventDefault(); openMail(e.target.dataset.id); }
 });
